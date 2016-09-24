@@ -19,16 +19,34 @@ typedef pair<ll,ll> pll;
 #define eb emplace_back
 #define pb push_back
 
-vector<int> cxx[200000];
-vector<pii> cx[200000];
+vector<pii> p[2][200000];
 
-int search(int x, int y){
-  int ret;
-  vector<int>::iterator pos;
-  pos = lower_bound(all(cxx[x]), y);
-  ret = cx[x][pos-cxx[x].begin()].Y;
+int u[2][200000];
+int m[2];
+const int INF=1000000000;
+
+bool dfs(int now, int to, int pos){
+  bool ret = true;
+  //cout << now << " : " << to << " : " << pos << endl;
+  m[pos] = min(m[pos], now);
+  rep(i, p[pos][to].sz){
+    int next = p[pos][to][i].X;
+    int val = p[pos][to][i].Y;
+    //cout << "next: " << next << "  val: " << val << "  u[" << 1-pos << "][" << next << "]: " << u[1-pos][next] << endl;
+
+    if(u[1-pos][next] == INF){
+      u[1-pos][next] = val-now;
+      m[1-pos] = min(m[1-pos], u[1-pos][next]);
+      if(m[0]+m[1] < 0)return false;
+      ret &= dfs(u[1-pos][next], next, 1-pos);
+    }else if(u[1-pos][next] != val-now){
+      return false;
+    }
+  }
+  //cout << "---" << endl;
   return ret;
 }
+
 
 int main(void){
   int r,c,n;
@@ -37,94 +55,27 @@ int main(void){
   cin >> n;
   rep(i,n){
     cin >> x >> y >> a;
-    cx[x].pb(make_pair(y,a));
-    cxx[x].pb(y);
+    x--;y--;
+    p[0][x].pb(make_pair(y,a));
+    p[1][y].pb(make_pair(x,a));
   }
-  rep(i,n){
-    sort(all(cx[i]));
-    sort(all(cxx[i]));
-  }
-  bool ok = true;
-  int mx = max(r,c);
-  rep(i,c+1){
-    if(cx[i].sz > 0){
-      rep(j, cx[i].sz){
-        x = i;
-        y = cx[i][j].X;
-        int lu = cx[i][j].Y;
-        reps(k, 1, mx){
-          int rd = -1, ru = -1, ld = -1;
-          int fd = 0;
-          if( y+k > r || i+k > c) break;
-          if(binary_search(all(cxx[i+k]), y+k)){
-            rd = search(i+k, y+k);
-            fd++;
-          }
-          if(binary_search(all(cxx[i]), y+k)){
-            ld = search(i, y+k);
-            fd++;
-          }
-          if(binary_search(all(cxx[i+k]), y)){
-            ru = search(i+k, y);
-            fd++;
-          }
-          if(fd == 3){
-            if( rd + lu != ru + ld ) ok = false;
-          }else if(fd == 2){
-            if(rd == -1){
-              rd = ru + ld - lu;
-              if(rd < 0) ok = false;
-              else{
-                cx[i+k].pb(make_pair(y+k, rd));
-                cxx[i+k].pb(y+k);
-                sort(all(cx[i+k]));
-                sort(all(cxx[i+k]));
-              }
-            }else if(ru == -1){
-              ru = lu + rd - ld;
-              if(ru < 0)ok = false;
-              else{
-                cx[i+k].pb(make_pair(y, ru));
-                cxx[i+k].pb(y);
-                sort(all(cx[i+k]));
-                sort(all(cxx[i+k]));
-              }
-            }else if(ld == -1){
-              ld = lu + rd - ru;
-              if(ld < 0)ok = false;
-              else{
-                cx[i].pb(make_pair(y+k, ld));
-                cxx[i].pb(y+k);
-                sort(all(cx[i]));
-                sort(all(cxx[i]));
-              }
-            }
-          }
-        }
-      }
-    }
-    if(!ok)break;
-  }
-  if(ok) cout << "YES" << endl;
-  else cout << "NO" << endl;
+  
+  rep(i, r)u[0][i] = INF;
+  rep(i, c)u[1][i] = INF;
 
+  bool ret = true;
 
-  /*
-  rep(i,n){
-    if(cx[i].sz > 0){
-      rep(j,cx[i].sz){
-        cout << i << "," <<  cx[i][j].X << " : " << cx[i][j].Y << endl;
-      }
+  rep(i,r){
+    if(u[0][i] == INF){
+      u[0][i] = 0;
+      m[0] = 0;m[1] = INF;
+      ret &= dfs(0, i, 0);
     }
   }
-  rep(i,n){
-    if(cy[i].sz > 0){
-      rep(j,cy[i].sz){
-        cout << cy[i][j].X << "," <<  i << " : " << cy[i][j].Y << endl;
-      }
-    }
-  }
-  */
+
+  if(ret) cout << "Yes" << endl;
+  else cout << "No" << endl;
+
   return 0;
 
 }
