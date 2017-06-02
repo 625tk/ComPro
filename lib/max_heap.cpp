@@ -13,8 +13,6 @@ class MaxHeap{
     const T INF;
     MaxHeap(int n):INF(numeric_limits<T>::max()/2){a.resize(n+1, INF);}
     MaxHeap():INF(numeric_limits<T>::max()/2){a.resize(1,INF);}
-    T findMax(){return a[1];}
-    T findMin(){ return a.size() > 3? min(a[2], a[3]): a[1+(a.size()==3)];}
     bool empty() { return a.size() == 1; }
     void insert(T x){a.push_back(x);rmx(a.size()-1);}
     void buildMaXHeap(){for(int i = (a.size()-1)/2; i > 0; --i) mx(i);}
